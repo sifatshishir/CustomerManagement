@@ -29,7 +29,6 @@ partial class Form1
 
     private void InitializeComponent()
     {
-        components = new Container();
         dataGridViewCustomers = new DataGridView();
         btnAdd = new Button();
         btnEdit = new Button();
@@ -39,94 +38,107 @@ partial class Form1
         btnApplySort = new Button();
         chkAscending = new CheckBox();
         btnRefresh = new Button();
-
+        ((ISupportInitialize)dataGridViewCustomers).BeginInit();
         SuspendLayout();
-
+        // 
         // dataGridViewCustomers
-        dataGridViewCustomers.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-        dataGridViewCustomers.Location = new System.Drawing.Point(12, 50);
-        dataGridViewCustomers.Name = "dataGridViewCustomers";
-        dataGridViewCustomers.RowTemplate.Height = 25;
-        dataGridViewCustomers.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-        dataGridViewCustomers.MultiSelect = false;
-        dataGridViewCustomers.Size = new System.Drawing.Size(760, 330);
-        dataGridViewCustomers.ReadOnly = true;
+        // 
         dataGridViewCustomers.AllowUserToAddRows = false;
         dataGridViewCustomers.AllowUserToDeleteRows = false;
-        dataGridViewCustomers.AutoGenerateColumns = false;
-
+        dataGridViewCustomers.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+        dataGridViewCustomers.Location = new Point(12, 50);
+        dataGridViewCustomers.MultiSelect = false;
+        dataGridViewCustomers.Name = "dataGridViewCustomers";
+        dataGridViewCustomers.ReadOnly = true;
+        dataGridViewCustomers.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+        dataGridViewCustomers.Size = new Size(760, 330);
+        dataGridViewCustomers.TabIndex = 0;
+        // 
         // btnAdd
-        btnAdd.Location = new System.Drawing.Point(12, 12);
+        // 
+        btnAdd.Location = new Point(12, 12);
         btnAdd.Name = "btnAdd";
-        btnAdd.Size = new System.Drawing.Size(75, 25);
+        btnAdd.Size = new Size(75, 25);
+        btnAdd.TabIndex = 0;
         btnAdd.Text = "Add";
         btnAdd.UseVisualStyleBackColor = true;
-        btnAdd.Click += new EventHandler(btnAdd_Click);
-        btnAdd.TabIndex = 0;
-
+        btnAdd.Click += btnAdd_Click;
+        // 
         // btnEdit
-        btnEdit.Location = new System.Drawing.Point(93, 12);
+        // 
+        btnEdit.Location = new Point(93, 12);
         btnEdit.Name = "btnEdit";
-        btnEdit.Size = new System.Drawing.Size(75, 25);
+        btnEdit.Size = new Size(75, 25);
+        btnEdit.TabIndex = 1;
         btnEdit.Text = "Edit";
         btnEdit.UseVisualStyleBackColor = true;
-        btnEdit.Click += new EventHandler(btnEdit_Click);
-        btnEdit.TabIndex = 1;
-
+        btnEdit.Click += btnEdit_Click;
+        // 
         // btnDelete
-        btnDelete.Location = new System.Drawing.Point(174, 12);
+        // 
+        btnDelete.Location = new Point(174, 12);
         btnDelete.Name = "btnDelete";
-        btnDelete.Size = new System.Drawing.Size(75, 25);
+        btnDelete.Size = new Size(75, 25);
+        btnDelete.TabIndex = 2;
         btnDelete.Text = "Delete";
         btnDelete.UseVisualStyleBackColor = true;
-        btnDelete.Click += new EventHandler(btnDelete_Click);
-        btnDelete.TabIndex = 2;
-
+        btnDelete.Click += btnDelete_Click;
+        // 
         // btnImport
-        btnImport.Location = new System.Drawing.Point(255, 12);
+        // 
+        btnImport.Location = new Point(255, 12);
         btnImport.Name = "btnImport";
-        btnImport.Size = new System.Drawing.Size(75, 25);
+        btnImport.Size = new Size(75, 25);
+        btnImport.TabIndex = 3;
         btnImport.Text = "Import JSON";
         btnImport.UseVisualStyleBackColor = true;
-        btnImport.Click += new EventHandler(btnImport_Click);
-        btnImport.TabIndex = 3;
-
-        // btnRefresh
-        btnRefresh.Location = new System.Drawing.Point(336, 12);
-        btnRefresh.Name = "btnRefresh";
-        btnRefresh.Size = new System.Drawing.Size(75, 25);
-        btnRefresh.Text = "Refresh";
-        btnRefresh.UseVisualStyleBackColor = true;
-        btnRefresh.Click += new EventHandler(btnRefresh_Click);
-        btnRefresh.TabIndex = 4;
-
+        btnImport.Click += btnImport_Click;
+        // 
         // cmbSort
+        // 
         cmbSort.DropDownStyle = ComboBoxStyle.DropDownList;
-        cmbSort.Location = new System.Drawing.Point(480, 13);
+        cmbSort.Location = new Point(451, 14);
         cmbSort.Name = "cmbSort";
-        cmbSort.Size = new System.Drawing.Size(140, 23);
+        cmbSort.Size = new Size(140, 23);
         cmbSort.TabIndex = 5;
-
-        // chkAscending
-        chkAscending.Location = new System.Drawing.Point(626, 15);
-        chkAscending.Name = "chkAscending";
-        chkAscending.Size = new System.Drawing.Size(80, 19);
-        chkAscending.Text = "Ascending";
-        chkAscending.Checked = true;
-        chkAscending.TabIndex = 6;
-
+        cmbSort.SelectedIndexChanged += cmbSort_SelectedIndexChanged;
+        // 
         // btnApplySort
-        btnApplySort.Location = new System.Drawing.Point(712, 12);
+        // 
+        btnApplySort.Location = new Point(704, 12);
         btnApplySort.Name = "btnApplySort";
-        btnApplySort.Size = new System.Drawing.Size(60, 25);
+        btnApplySort.Size = new Size(60, 25);
+        btnApplySort.TabIndex = 7;
         btnApplySort.Text = "Sort";
         btnApplySort.UseVisualStyleBackColor = true;
-        btnApplySort.Click += new EventHandler(btnApplySort_Click);
-        btnApplySort.TabIndex = 7;
-
+        btnApplySort.Click += btnApplySort_Click;
+        // 
+        // chkAscending
+        // 
+        chkAscending.Checked = true;
+        chkAscending.CheckState = CheckState.Checked;
+        chkAscending.Location = new Point(609, 16);
+        chkAscending.Name = "chkAscending";
+        chkAscending.Size = new Size(89, 19);
+        chkAscending.TabIndex = 6;
+        chkAscending.Text = "Ascending";
+        chkAscending.CheckedChanged += chkAscending_CheckedChanged;
+        // 
+        // btnRefresh
+        // 
+        btnRefresh.Location = new Point(336, 12);
+        btnRefresh.Name = "btnRefresh";
+        btnRefresh.Size = new Size(75, 25);
+        btnRefresh.TabIndex = 4;
+        btnRefresh.Text = "Refresh";
+        btnRefresh.UseVisualStyleBackColor = true;
+        btnRefresh.Click += btnRefresh_Click;
+        // 
         // Form1
+        // 
+        AutoScaleDimensions = new SizeF(7F, 15F);
         AutoScaleMode = AutoScaleMode.Font;
-        ClientSize = new System.Drawing.Size(784, 391);
+        ClientSize = new Size(784, 391);
         Controls.Add(dataGridViewCustomers);
         Controls.Add(btnAdd);
         Controls.Add(btnEdit);
@@ -137,9 +149,9 @@ partial class Form1
         Controls.Add(chkAscending);
         Controls.Add(btnApplySort);
         Name = "Form1";
-        Text = "Customer Management";
         StartPosition = FormStartPosition.CenterScreen;
-
+        Text = "Customer Management";
+        ((ISupportInitialize)dataGridViewCustomers).EndInit();
         ResumeLayout(false);
     }
 }

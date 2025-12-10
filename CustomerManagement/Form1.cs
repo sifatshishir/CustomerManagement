@@ -172,4 +172,14 @@ public partial class Form1 : Form
         _bindingSource.DataSource = _repo.Customers;
         dataGridViewCustomers.Refresh();
     }
+
+    private void chkAscending_CheckedChanged(object sender, EventArgs e)
+    {
+
+    }
+
+    private void cmbSort_SelectedIndexChanged(object sender, EventArgs e)
+    {
+
+    }
 }

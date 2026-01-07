@@ -1,10 +1,10 @@
-﻿namespace CustomerManagement;
+namespace CustomerManagement.Forms;
 
 using System;
 using System.ComponentModel;
 using System.Windows.Forms;
 
-partial class Form1
+partial class MainForm
 {
     private System.ComponentModel.IContainer components = null;
     private DataGridView dataGridViewCustomers;
@@ -134,7 +134,7 @@ partial class Form1
         btnRefresh.UseVisualStyleBackColor = true;
         btnRefresh.Click += btnRefresh_Click;
         // 
-        // Form1
+        // MainForm
         // 
         AutoScaleDimensions = new SizeF(7F, 15F);
         AutoScaleMode = AutoScaleMode.Font;
@@ -148,10 +148,11 @@ partial class Form1
         Controls.Add(cmbSort);
         Controls.Add(chkAscending);
         Controls.Add(btnApplySort);
-        Name = "Form1";
+        Name = "MainForm";
         StartPosition = FormStartPosition.CenterScreen;
         Text = "Customer Management";
         ((ISupportInitialize)dataGridViewCustomers).EndInit();
         ResumeLayout(false);
     }
 }
+

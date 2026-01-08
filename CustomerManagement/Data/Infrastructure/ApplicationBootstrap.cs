@@ -22,17 +22,17 @@ public static class ApplicationBootstrap
 
     public static void Run()
     {
-        // In a real app, this would come from appsettings.json
-        bool useDatabase = true; 
-
         try 
         {
-            var services = ConfigureServices(useDatabase);
+            var (services, mode) = ConfigureServices();
             
             var mainForm = new MainForm(
                 services.CustomerService, 
                 services.InvoiceService, 
                 services.PaymentService);
+
+            // Inform user about the mode if they care, or just set title
+            mainForm.Text += $" - Mode: {mode}";
 
             Application.Run(mainForm);
         }
@@ -42,30 +42,49 @@ public static class ApplicationBootstrap
         }
     }
 
-    private static (ICustomerService CustomerService, IInvoiceService InvoiceService, IPaymentService PaymentService) ConfigureServices(bool useDatabase)
+    private static ( (ICustomerService CustomerService, IInvoiceService InvoiceService, IPaymentService PaymentService) Services, string Mode) ConfigureServices()
     {
-        if (useDatabase)
+        string connectionString = "Server=localhost;Database=customermanagement;Uid=root;Pwd=123456;";
+        bool dbAvailable = TestConnection(connectionString);
+
+        if (dbAvailable)
         {
-            string connectionString = "Server=localhost;Database=customermanagement;Uid=root;Pwd=password;";
             var dbFactory = new DbConnectionFactory(connectionString);
             Func<IUnitOfWork> uowFactory = () => new UnitOfWork(dbFactory);
             
-            return (
-                new CustomerService(uowFactory),
-                new InvoiceService(uowFactory),
-                new PaymentService(uowFactory)
+            var services = (
+                (ICustomerService)new CustomerService(uowFactory),
+                (IInvoiceService)new InvoiceService(uowFactory),
+                (IPaymentService)new PaymentService(uowFactory)
             );
+            return (services, "Database (MySQL)");
         }
         else
         {
+            // Fallback to JSON
             var memoryRepo = new InMemoryCustomerRepository(); 
             Func<IUnitOfWork> uowFactory = () => new JsonUnitOfWork(memoryRepo);
             
-            return (
-                new CustomerService(uowFactory),
-                new InvoiceService(uowFactory),
-                new PaymentService(uowFactory)
+            var services = (
+                (ICustomerService)new CustomerService(uowFactory),
+                (IInvoiceService)new InvoiceService(uowFactory),
+                (IPaymentService)new PaymentService(uowFactory)
             );
+            return (services, "In-Memory (JSON Fallback)");
+        }
+    }
+
+    private static bool TestConnection(string connectionString)
+    {
+        try
+        {
+            using var conn = new MySql.Data.MySqlClient.MySqlConnection(connectionString);
+            conn.Open();
+            return true;
+        }
+        catch
+        {
+            return false;
         }
     }
 

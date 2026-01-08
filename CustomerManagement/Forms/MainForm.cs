@@ -12,7 +12,8 @@ using CustomerManagement.Models;
         private readonly ICustomerService _customerService;
         private readonly IInvoiceService _invoiceService;
         private readonly IPaymentService _paymentService;
-        private readonly BindingSource _bindingSource = new();
+        private readonly BindingSource _customerBindingSource = new();
+        private readonly BindingSource _invoiceBindingSource = new();
 
         public MainForm(ICustomerService customerService, IInvoiceService invoiceService, IPaymentService paymentService)
         {
@@ -28,9 +29,12 @@ using CustomerManagement.Models;
     {
         base.OnLoad(e);
 
-        _bindingSource.DataSource = _customerService.GetAll();
+        _customerBindingSource.DataSource = _customerService.GetAll();
         dataGridViewCustomers.AutoGenerateColumns = false;
-        dataGridViewCustomers.DataSource = _bindingSource;
+        dataGridViewCustomers.DataSource = _customerBindingSource;
+
+        dataGridViewInvoices.AutoGenerateColumns = false;
+        dataGridViewInvoices.DataSource = _invoiceBindingSource;
 
         // Configure columns
         dataGridViewCustomers.Columns.Clear();
@@ -60,6 +64,27 @@ using CustomerManagement.Models;
         cmbSort.SelectedIndex = 0;
 
         dataGridViewCustomers.CellDoubleClick += DataGridViewCustomers_CellDoubleClick;
+
+        // Configure Invoice Columns
+        dataGridViewInvoices.Columns.Add(new DataGridViewTextBoxColumn 
+        { 
+            DataPropertyName = nameof(Invoice.Date), 
+            HeaderText = "Date", 
+            Width = 120 
+        });
+        dataGridViewInvoices.Columns.Add(new DataGridViewTextBoxColumn 
+        { 
+            DataPropertyName = nameof(Invoice.TotalAmount), 
+            HeaderText = "Amount", 
+            Width = 100,
+            DefaultCellStyle = { Format = "C2" }
+        });
+        dataGridViewInvoices.Columns.Add(new DataGridViewTextBoxColumn 
+        { 
+            DataPropertyName = nameof(Invoice.Status), 
+            HeaderText = "Status", 
+            AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill 
+        });
     }
 
     private void btnAdd_Click(object sender, EventArgs e)
@@ -93,7 +118,7 @@ using CustomerManagement.Models;
 
     private void EditSelected()
     {
-        if (_bindingSource.Current is not Customer selected)
+        if (_customerBindingSource.Current is not Customer selected)
         {
             MessageBox.Show(this, "Select a customer to edit.", "Edit", MessageBoxButtons.OK, MessageBoxIcon.Information);
             return;
@@ -117,9 +142,84 @@ using CustomerManagement.Models;
         }
     }
 
+    private void DataGridViewCustomers_SelectionChanged(object? sender, EventArgs e)
+    {
+        RefreshInvoices();
+    }
+
+    private void RefreshInvoices()
+    {
+        if (_customerBindingSource.Current is Customer selected)
+        {
+            _invoiceBindingSource.DataSource = _invoiceService.GetByCustomerId(selected.Id);
+        }
+        else
+        {
+            _invoiceBindingSource.DataSource = null;
+        }
+    }
+
+    private void btnAddInvoice_Click(object sender, EventArgs e)
+    {
+        if (_customerBindingSource.Current is not Customer selected)
+        {
+            MessageBox.Show("Select a customer first.", "Invoice", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            return;
+        }
+
+        var newInvoice = new Invoice { CustomerId = selected.Id, Date = DateTime.Now };
+        using var dlg = new InvoiceDetailForm(newInvoice, isNew: true);
+        if (dlg.ShowDialog(this) == DialogResult.OK)
+        {
+            _invoiceService.Add(dlg.Invoice);
+            RefreshInvoices();
+        }
+    }
+
+    private void btnEditInvoice_Click(object sender, EventArgs e)
+    {
+        if (_invoiceBindingSource.Current is not Invoice selected)
+        {
+            MessageBox.Show("Select an invoice to edit.", "Invoice", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            return;
+        }
+
+        // Work on a copy
+        var copy = new Invoice
+        {
+            Id = selected.Id,
+            CustomerId = selected.CustomerId,
+            Date = selected.Date,
+            TotalAmount = selected.TotalAmount,
+            Status = selected.Status
+        };
+
+        using var dlg = new InvoiceDetailForm(copy);
+        if (dlg.ShowDialog(this) == DialogResult.OK)
+        {
+            _invoiceService.Update(dlg.Invoice);
+            RefreshInvoices();
+        }
+    }
+
+    private void btnDeleteInvoice_Click(object sender, EventArgs e)
+    {
+        if (_invoiceBindingSource.Current is not Invoice selected)
+        {
+            MessageBox.Show("Select an invoice to delete.", "Invoice", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            return;
+        }
+
+        if (MessageBox.Show("Delete this invoice?", "Confirm", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
+        {
+            _invoiceService.Delete(selected.Id);
+            RefreshInvoices();
+        }
+    }
+
     private void btnDelete_Click(object sender, EventArgs e)
     {
-        if (_bindingSource.Current is not Customer selected)
+        if (_customerBindingSource.Current is not Customer selected)
         {
             MessageBox.Show(this, "Select a customer to delete.", "Delete", MessageBoxButtons.OK, MessageBoxIcon.Information);
             return;
@@ -224,15 +324,16 @@ using CustomerManagement.Models;
         var sorted = asc
             ? ordered.ToList()
             : ordered.Reverse().ToList();
-        _bindingSource.DataSource = new BindingList<Customer>(sorted);
+        _customerBindingSource.DataSource = new BindingList<Customer>(sorted);
     }
 
     private void btnRefresh_Click(object sender, EventArgs e) => RefreshView();
 
     private void RefreshView()
     {
-        _bindingSource.DataSource = _customerService.GetAll();
+        _customerBindingSource.DataSource = _customerService.GetAll();
         dataGridViewCustomers.Refresh();
+        RefreshInvoices();
     }
 
     private void chkAscending_CheckedChanged(object sender, EventArgs e)

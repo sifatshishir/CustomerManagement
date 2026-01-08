@@ -35,20 +35,38 @@ A modern Windows Forms application built with **.NET 10** for managing customer 
 
 ## 🚀 Quick Start
 
-### Option 1: Run the Executable
-1. Download the latest `CustomerManagement.exe` from the [Releases](releases) page
-2. Run the executable directly—no installation required
-3. The app will create `customers.json` automatically on first run
+### Option 1: Direct Launch (No Installation)
+1. Navigate to the [releases](releases) folder in this repository.
+2. Run [CustomerManagement.exe](releases/CustomerManagement.exe) directly.
+3. The app will attempt to connect to MySQL; if it fails, it automatically falls back to `customers.json`.
 
 ### Option 2: Run from Visual Studio
-1. Clone the repository:
-2. Open `CustomerManagement.sln` in Visual Studio 2026
-3. Press **F5** to build and run
+1. Clone the repository: `git clone https://github.com/sifatshishir/CustomerManagement.git`
+2. Open `CustomerManagement.slnx` in Visual Studio 2022/2026.
+3. Press **F5** to build and run.
 
 ### Option 3: Build from Source
-1. Clone the repository (see Option 2)
-2. Build the solution:
-3. Run the application:
+1. Clone the repository (see Option 2).
+2. Build the solution using `dotnet build`.
+3. Run the application from the `bin/Debug` folder.
+
+---
+
+## ⚙️ Configuration & Connections
+
+### Smart Data Fallback
+The application features a built-in fallback mechanism:
+- **Priority 1 (MySQL):** Tries to connect to a local MySQL instance using the credentials in [ApplicationBootstrap.cs](CustomerManagement/Data/Infrastructure/ApplicationBootstrap.cs).
+- **Priority 2 (JSON):** If the database is unavailable, it automatically switches to a local `customers.json` file.
+
+### MySQL Setup
+1. Ensure MySQL Server is installed and running.
+2. Run the [schema.sql](CustomerManagement/Data/SQL/schema.sql) in your MySQL instance to create the database.
+3. Update the connection string in [ApplicationBootstrap.cs](CustomerManagement/Data/Infrastructure/ApplicationBootstrap.cs):
+   ```csharp
+   string connectionString = "Server=localhost;Database=customermanagement;Uid=root;Pwd=YOUR_PASSWORD;";
+   ```
+4. Replace `YOUR_PASSWORD` with your actual MySQL root password.
 
 ---
 
@@ -183,7 +201,8 @@ Use Visual Studio's **Publish** feature:
 
 ## 📝 File Locations
 
-- **Data File:** `customers.json` (same directory as `.exe`)
+- **Data File:** `customers.json` (created in the same directory as the `.exe` when in fallback mode)
+- **Database:** `customermanagement` (MySQL)
 - **Logs/Temp:** No log files; all errors displayed in dialogs
 
 ---

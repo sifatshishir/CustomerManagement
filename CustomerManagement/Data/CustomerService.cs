@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using CustomerManagement.Data.Infrastructure;
 using CustomerManagement.Models;
 
 namespace CustomerManagement.Data
@@ -14,51 +15,117 @@ namespace CustomerManagement.Data
         void Delete(int id);
         Customer? FindById(int id);
         void Import(IEnumerable<Customer> customers);
-        void Save();
     }
 
     public class CustomerService : ICustomerService
     {
-        private readonly ICustomerRepository _repo;
-        public CustomerService(ICustomerRepository repo)
+        private readonly Func<IUnitOfWork> _uowFactory;
+
+        public CustomerService(Func<IUnitOfWork> uowFactory)
         {
-            _repo = repo;
+            _uowFactory = uowFactory;
         }
 
-        public BindingList<Customer> GetAll() => new BindingList<Customer>(_repo.Customers.ToList());
-        public void Add(Customer customer) => _repo.Add(customer);
-        public void Update(Customer customer) => _repo.Update(customer);
-        public void Delete(int id) => _repo.Delete(id);
-        public Customer? FindById(int id) => _repo.FindById(id);
+        public BindingList<Customer> GetAll()
+        {
+            using var uow = _uowFactory();
+            // We convert to list to eagerly fetch everything before disposing UoW
+            var list = uow.Customers.GetAll().ToList();
+            return new BindingList<Customer>(list);
+        }
+
+        public void Add(Customer customer)
+        {
+            if (customer == null) throw new ArgumentNullException(nameof(customer));
+
+            using var uow = _uowFactory();
+            try
+            {
+                uow.Customers.Add(customer);
+                uow.Commit();
+            }
+            catch (Exception ex)
+            {
+                // Note: Rollback is handled by uow.Dispose if not committed, 
+                // but explicit rollback is safer or handled in Commit() catch.
+                uow.Rollback();
+                throw new ServiceException("Error adding customer", ex);
+            }
+        }
+
+        public void Update(Customer customer)
+        {
+            if (customer == null) throw new ArgumentNullException(nameof(customer));
+
+            using var uow = _uowFactory();
+            try
+            {
+                uow.Customers.Update(customer);
+                uow.Commit();
+            }
+            catch (Exception ex)
+            {
+                uow.Rollback();
+                throw new ServiceException("Error updating customer", ex);
+            }
+        }
+
+        public void Delete(int id)
+        {
+            using var uow = _uowFactory();
+            try
+            {
+                uow.Customers.Delete(id);
+                uow.Commit();
+            }
+            catch (Exception ex)
+            {
+                uow.Rollback();
+                throw new ServiceException("Error deleting customer", ex);
+            }
+        }
+
+        public Customer? FindById(int id)
+        {
+            try
+            {
+                using var uow = _uowFactory();
+                return uow.Customers.FindById(id);
+            }
+            catch (Exception ex)
+            {
+                throw new ServiceException($"Error finding customer {id}", ex);
+            }
+        }
+
         public void Import(IEnumerable<Customer> customers)
         {
             if (customers == null)
                 throw new ArgumentNullException(nameof(customers));
 
-            foreach (var customer in customers)
-            {
-                if (customer == null)
-                    continue;
-                _repo.Add(customer);
-            }
-        }
+            using var uow = _uowFactory();
+            using var transaction = uow.BeginTransaction();
 
-        public void Save()
-        {
             try
             {
-                if (_repo is InMemoryCustomerRepository mem)
-                    mem.SaveToJson();
-            }
-            catch (InvalidOperationException)
-            {
-                throw;
+                foreach (var customer in customers)
+                {
+                    if (customer == null) continue;
+                    uow.Customers.Add(customer);
+                }
+                
+                uow.Commit();
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException($"Failed to save customer data: {ex.Message}", ex);
+                uow.Rollback();
+                throw new ServiceException("Error during import", ex);
             }
         }
     }
-}
 
+    public class ServiceException : Exception
+    {
+        public ServiceException(string message, Exception innerException) : base(message, innerException) { }
+    }
+}

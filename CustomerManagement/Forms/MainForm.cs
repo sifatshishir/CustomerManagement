@@ -7,22 +7,28 @@ using System.Windows.Forms;
 using CustomerManagement.Data;
 using CustomerManagement.Models;
 
-public partial class MainForm : Form
-{
-    private readonly ICustomerService _service = new CustomerService(new InMemoryCustomerRepository());
-    private readonly BindingSource _bindingSource = new();
-
-    public MainForm()
+    public partial class MainForm : Form
     {
-        InitializeComponent();
-        StartPosition = FormStartPosition.CenterScreen;
-    }
+        private readonly ICustomerService _customerService;
+        private readonly IInvoiceService _invoiceService;
+        private readonly IPaymentService _paymentService;
+        private readonly BindingSource _bindingSource = new();
+
+        public MainForm(ICustomerService customerService, IInvoiceService invoiceService, IPaymentService paymentService)
+        {
+            InitializeComponent();
+            StartPosition = FormStartPosition.CenterScreen;
+            
+            _customerService = customerService ?? throw new ArgumentNullException(nameof(customerService));
+            _invoiceService = invoiceService ?? throw new ArgumentNullException(nameof(invoiceService));
+            _paymentService = paymentService ?? throw new ArgumentNullException(nameof(paymentService));
+        }
 
     protected override void OnLoad(EventArgs e)
     {
         base.OnLoad(e);
 
-        _bindingSource.DataSource = _service.GetAll();
+        _bindingSource.DataSource = _customerService.GetAll();
         dataGridViewCustomers.AutoGenerateColumns = false;
         dataGridViewCustomers.DataSource = _bindingSource;
 
@@ -64,8 +70,7 @@ public partial class MainForm : Form
             using var dlg = new CustomerDetailForm(newCustomer, isNew: true);
             if (dlg.ShowDialog(this) == DialogResult.OK)
             {
-                _service.Add(dlg.Customer);
-                _service.Save();
+                _customerService.Add(dlg.Customer);
                 RefreshView();
             }
         }
@@ -107,20 +112,8 @@ public partial class MainForm : Form
         using var dlg = new CustomerDetailForm(copy);
         if (dlg.ShowDialog(this) == DialogResult.OK)
         {
-            try
-            {
-                _service.Update(dlg.Customer);
-                _service.Save();
-                RefreshView();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(
-                    $"Error updating customer: {ex.Message}",
-                    "Error",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error);
-            }
+            _customerService.Update(dlg.Customer);
+            RefreshView();
         }
     }
 
@@ -135,20 +128,8 @@ public partial class MainForm : Form
         var ok = MessageBox.Show(this, $"Delete {selected.FullName}?", "Confirm", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
         if (ok == DialogResult.Yes)
         {
-            try
-            {
-                _service.Delete(selected.Id);
-                _service.Save();
-                RefreshView();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(
-                    $"Error deleting customer: {ex.Message}",
-                    "Error",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error);
-            }
+            _customerService.Delete(selected.Id);
+            RefreshView();
         }
     }
 
@@ -188,20 +169,7 @@ public partial class MainForm : Form
                 return;
             }
 
-            try
-            {
-                _service.Import(result.Customers);
-                _service.Save();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(
-                    $"Error saving imported customers: {ex.Message}",
-                    "Save Error",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error);
-                return;
-            }
+            _customerService.Import(result.Customers);
 
             if (!string.IsNullOrEmpty(result.WarningMessage))
             {
@@ -246,7 +214,7 @@ public partial class MainForm : Form
         var criteria = cmbSort.SelectedItem?.ToString() ?? "Name";
         var asc = chkAscending.Checked;
 
-        var customers = _service.GetAll();
+        var customers = _customerService.GetAll();
         IEnumerable<Customer> ordered = criteria switch
         {
             "Age" => customers.OrderBy(c => c.Age),
@@ -263,7 +231,7 @@ public partial class MainForm : Form
 
     private void RefreshView()
     {
-        _bindingSource.DataSource = _service.GetAll();
+        _bindingSource.DataSource = _customerService.GetAll();
         dataGridViewCustomers.Refresh();
     }
 
@@ -277,4 +245,5 @@ public partial class MainForm : Form
 
     }
 }
+
 

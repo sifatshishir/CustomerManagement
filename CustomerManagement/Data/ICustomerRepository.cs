@@ -5,7 +5,7 @@ using CustomerManagement.Models;
 
 public interface ICustomerRepository
 {
-    BindingList<Customer> Customers { get; }
+    IEnumerable<Customer> GetAll();
 
     void Add(Customer customer);
 

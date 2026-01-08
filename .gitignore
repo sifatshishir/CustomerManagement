@@ -360,3 +360,7 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# Allow the specific release EXE even though we ignore build folders
+!releases/
+!releases/CustomerManagement.exe

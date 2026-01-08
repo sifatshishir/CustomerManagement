@@ -360,5 +360,3 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
-.github/copilot-instruction.md
-CustomerManagement/ARCHITECTURE.md
